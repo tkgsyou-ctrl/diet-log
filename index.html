@@ -567,6 +567,8 @@
       xContent: xMode ? xContent : ''
     };
 
+    // 保存前に最新のストレージデータを読み直し、メモリとのズレを防ぐ
+    await loadLogs();
     logs.unshift(log);
     await persistLogs();
 
@@ -583,11 +585,9 @@
 
   async function loadLogs() {
     try {
-      if (window.storage) {
-        const result = await window.storage.get('decision-logs').catch(() => null);
-        if (result && result.value) {
-          logs = JSON.parse(result.value);
-        }
+      const data = localStorage.getItem('decision-logs');
+      if (data) {
+        logs = JSON.parse(data);
       }
     } catch (e) {
       logs = [];
@@ -596,9 +596,7 @@
 
   async function persistLogs() {
     try {
-      if (window.storage) {
-        await window.storage.set('decision-logs', JSON.stringify(logs));
-      }
+      localStorage.setItem('decision-logs', JSON.stringify(logs));
     } catch (e) {
       showToast('保存に失敗しました', true);
     }
